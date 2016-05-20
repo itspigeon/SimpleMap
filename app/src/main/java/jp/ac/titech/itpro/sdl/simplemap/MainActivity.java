@@ -10,6 +10,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -33,6 +35,8 @@ public class MainActivity extends AppCompatActivity implements
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
     private boolean requestingLocationUpdate;
+    private double lat = 0.0;
+    private double lng = 0.0;
 
     private enum UpdatingState {STOPPED, REQUESTING, STARTED}
 
@@ -121,8 +125,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged: " + location);
-        googleMap.animateCamera(CameraUpdateFactory
-                .newLatLng(new LatLng(location.getLatitude(), location.getLongitude())));
+        lat = location.getLatitude();
+        lng = location.getLongitude();
     }
 
     @Override
@@ -134,6 +138,31 @@ public class MainActivity extends AppCompatActivity implements
             startLocationUpdate(false);
             break;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        Log.d(TAG, "onCreateOptionsMenu");
+        getMenuInflater().inflate(R.menu.main, menu);
+        menu.findItem(R.id.menu_centering).setVisible(true);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(TAG, "onOptionsItemSelected");
+        switch (item.getItemId()) {
+            case R.id.menu_centering:
+                centeringCamera();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void centeringCamera() {
+        googleMap.animateCamera(CameraUpdateFactory
+            .newLatLng(new LatLng(lat, lng)));
     }
 
     private void startLocationUpdate(boolean reqPermission) {
